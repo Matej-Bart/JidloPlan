@@ -5,11 +5,10 @@ JidloPlan je webová PWA aplikace v JavaScriptu pro vyhledávání receptů, tvo
 ## Účel aplikace
 
 Aplikace řeší běžnou situaci: uživatel chce najít inspiraci na jídlo, uložit si zajímavé recepty, rozvrhnout je do týdne a rychle zjistit, co má nakoupit.
-
 ## Funkce
 
 - vyhledávání receptů podle názvu,
-- filtrování podle kategorií,
+- filtrování podle kuchyně (italská, japonská, mexická…),
 - načtení náhodného receptu,
 - detail receptu včetně ingrediencí a postupu,
 - ukládání oblíbených receptů do `localStorage`,
@@ -17,8 +16,18 @@ Aplikace řeší běžnou situaci: uživatel chce najít inspiraci na jídlo, ul
 - automatický nákupní seznam z naplánovaných receptů,
 - ruční přidání vlastních položek do nákupního seznamu,
 - označení položek jako nakoupených,
-- PWA manifest a service worker.
+- záložní lokální recepty při výpadku API,
 
+## Použité API endpointy
+
+Základní URL API: `https://api.spoonacular.com`
+
+| Endpoint | Účel |
+| --- | --- |
+| `/recipes/complexSearch?query={query}&addRecipeInformation=true` | Vyhledání receptů podle textu, vrátí rovnou plné informace |
+| `/recipes/complexSearch?cuisine={cuisine}&addRecipeInformation=true` | Filtrování receptů podle kuchyně |
+| `/recipes/random?number=12` | Načtení náhodných receptů |
+| `/recipes/{id}/information` | Načtení detailu konkrétního receptu podle ID |
 
 ## Lokální ukládání
 
@@ -31,10 +40,45 @@ Aplikace ukládá data do prohlížeče pomocí `localStorage`.
 | `jidlplan:custom-shopping` | Ručně přidané položky nákupního seznamu |
 | `jidlplan:checked-shopping` | Stav zaškrtnutých položek |
 
-## Princip fungování
+## Struktura projektu
 
-Uživatel může vyhledávat recepty, zobrazit detail receptu a přidat ho mezi oblíbené nebo do týdenního plánu. Při přidání receptu do plánu se z jeho ingrediencí automaticky vytvoří nákupní seznam. Oblíbené recepty, plán i nákupní seznam se průběžně ukládají do `localStorage`.
+| Soubor | Popis |
+| --- | --- |
+| `index.html` | HTML struktura aplikace |
+| `styles.css` | Responzivní vzhled aplikace |
+| `app.js` | Veškerá JavaScript logika aplikace |
+| `manifest.json` | PWA manifest (název, ikona, barvy) |
+| `sw.js` | Service worker – cache základních souborů pro offline režim |
+| `assets/icon.svg` | Ikona aplikace |
+| `zadani.md` | Schválené zadání projektu |
 
+## Princip fungování jednotlivých částí
+
+## Princip fungování jednotlivých částí
+ 
+### Komunikace s API
+ 
+Funkce `apiGet(endpoint)` sestaví URL, nastaví časový limit 8 sekund přes `AbortController` a zavolá `fetch()`. Při chybě se zobrazí záložní lokální recepty. Funkce `normalizeMeal()` převede odpověď Spoonacular na interní strukturu kterou používá zbytek aplikace.
+ 
+### Dynamická úprava obsahu stránky
+ 
+Aplikace nemá žádný framework – DOM mění přímo JavaScript. Funkce jako `renderRecipes()`, `renderPlanner()` a `renderShoppingList()` vždy celou sekci přepíší znovu podle aktuálního stavu v objektu `state`.
+ 
+### localStorage
+ 
+Funkce `saveStorage()` uloží data jako JSON, `loadStorage()` je při spuštění načte zpět. Data se ukládají okamžitě po každé změně.
+ 
+### Týdenní plán
+ 
+Plán je objekt kde klíčem je den a hodnotou tři sloty (`breakfast`, `lunch`, `dinner`). Každý slot je buď `null` nebo objekt receptu. Po každé změně plánu se automaticky přegeneruje nákupní seznam.
+ 
+### Nákupní seznam
+ 
+Funkce `collectPlannedIngredients()` projde celý plán a sesbírá ingredience. Duplicity odstraní `Set`, výsledek se seřadí abecedně. Ručně přidané položky a zaškrtnuté stavy se ukládají zvlášť do `localStorage`.
+ 
+### PWA
+ 
+`manifest.json` definuje název, ikonu a režim `standalone`. Service worker při první návštěvě uloží základní soubory do cache – aplikace pak funguje i offline. API volání se necachují, při výpadku internetu se zobrazí záložní recepty.
 ## Use-case diagram
 
 ```mermaid
@@ -44,9 +88,9 @@ flowchart LR
   U --> C["Uloží recept do oblíbených"]
   U --> D["Naplánuje recept do týdne"]
   D --> E["Aplikace vytvoří nákupní seznam"]
-  U --> F["Přidá vlastní položku"]
+  U --> F["Přidá vlastní položku do seznamu"]
   U --> G["Označí položku jako nakoupenou"]
-  A --> API["Spooncular API"]
+  A --> API["Spoonacular REST API"]
   B --> API
   C --> LS["localStorage"]
   D --> LS
