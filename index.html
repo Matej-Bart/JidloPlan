@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#317864" />
+    <title>JidloPlan | recepty a plán jídel</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <nav class="topbar" aria-label="Hlavní navigace">
+        <a class="brand" href="#top" aria-label="JidloPlan domů">
+          <span class="brand-mark" aria-hidden="true">JP</span>
+          <span>JidloPlan</span>
+        </a>
+        <div class="nav-links">
+          <a href="#recepty">Recepty</a>
+          <a href="#plan">Plán</a>
+          <a href="#nakup">Nákup</a>
+        </div>
+      </nav>
+
+      <section id="top" class="hero">
+        <div class="hero-copy">
+          <h1>Chytrý plán jídel z reálných receptů</h1>
+        </div>
+        <form class="search-panel" id="searchForm">
+          <label for="searchInput">Hledat recept</label>
+          <div class="search-row">
+            <input
+              id="searchInput"
+              name="query"
+              type="search"
+              placeholder="např. chicken, pasta, soup"
+              autocomplete="off"
+            />
+            <button type="submit">Hledat</button>
+          </div>
+          <div class="filter-row">
+            <label for="categorySelect">Kategorie</label>
+            <select id="categorySelect">
+              <option value="">Všechny kategorie</option>
+            </select>
+            <button type="button" id="randomButton">Náhodný recept</button>
+          </div>
+        </form>
+      </section>
+    </header>
+
+    <main>
+      <section class="status-strip" aria-live="polite">
+        <div>
+          <strong id="recipeCount">0</strong>
+          <span>nalezených receptů</span>
+        </div>
+        <div>
+          <strong id="favoriteCount">0</strong>
+          <span>oblíbených</span>
+        </div>
+        <div>
+          <strong id="plannedCount">0</strong>
+          <span>jídel v plánu</span>
+        </div>
+      </section>
+
+      <section id="recepty" class="content-grid">
+        <div class="section-heading">
+          <p class="eyebrow">Vyhledávání</p>
+          <h2>Databáze receptů</h2>
+        </div>
+        <div id="messageBox" class="message" hidden></div>
+        <div id="recipeGrid" class="recipe-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="workspace">
+        <div id="plan" class="planner-section">
+          <div class="section-heading">
+            <p class="eyebrow">localStorage</p>
+            <h2>Týdenní plán</h2>
+          </div>
+          <div id="plannerGrid" class="planner-grid"></div>
+          <button type="button" class="secondary-action" id="clearPlanButton">
+            Vymazat plán
+          </button>
+        </div>
+
+        <aside class="side-stack">
+          <section class="favorites-panel">
+            <div class="section-heading compact">
+              <p class="eyebrow">Uložené</p>
+              <h2>Oblíbené recepty</h2>
+            </div>
+            <div id="favoritesList" class="mini-list"></div>
+          </section>
+
+          <section id="nakup" class="shopping-panel">
+            <div class="section-heading compact">
+              <p class="eyebrow">Automaticky z plánu</p>
+              <h2>Nákupní seznam</h2>
+            </div>
+            <form id="customItemForm" class="custom-item-form">
+              <label for="customItemInput">Přidat položku</label>
+              <div class="mini-form-row">
+                <input id="customItemInput" type="text" placeholder="např. mléko" />
+                <button type="submit">Přidat</button>
+              </div>
+            </form>
+            <div id="shoppingList" class="shopping-list"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <dialog id="recipeDialog" class="recipe-dialog">
+      <article id="recipeDetail"></article>
+      <button class="dialog-close" id="closeDialogButton" type="button" aria-label="Zavřít">
+        ×
+      </button>
+    </dialog>
+
+    <template id="recipeCardTemplate">
+      <article class="recipe-card">
+        <img alt="" />
+        <div class="recipe-card-body">
+          <p class="recipe-meta"></p>
+          <h3></h3>
+          <div class="card-actions">
+            <button type="button" data-action="detail">Detail</button>
+            <button type="button" data-action="favorite" class="icon-button" aria-label="Přidat do oblíbených">
+              ☆
+            </button>
+          </div>
+        </div>
+      </article>
+    </template>
+  </body>
+</html>
